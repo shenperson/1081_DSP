@@ -9,6 +9,7 @@ HMM hmm;
 vector<vector<int>> Data;
 
 void load_data(char const *seq_path);
+void dump_data(char const *output_model_path);
 void train(int iter);
 void sub_train();
 
@@ -16,7 +17,7 @@ int main(int argc, char const *argv[]) {
   if (argc != 5) {
     cerr << "usage:\t./train <iter> <model_init_path> <seq_path> "
             "<output_model_path>\n";
-    return -1;
+    return 0;
   }
   int iter = atoi(argv[1]);
   const char *model_init_path = argv[2], *seq_path = argv[3],
@@ -31,6 +32,9 @@ int main(int argc, char const *argv[]) {
 
   // train
   train(iter);
+
+  // dump model
+  dump_data(output_model_path);
 }
 
 void load_data(char const *seq_path) {
@@ -46,6 +50,23 @@ void load_data(char const *seq_path) {
   }
   return;
 }
+
+void dump_data(char const *output_model_path) {
+  ofstream ss(output_model_path);
+  ss << left << "initial: " << DIM << '\n';
+  for (int i = 0; i < DIM; ++i) ss << setw(16) << hmm.initial[i];
+  ss << "\n\ntransition: " << DIM << '\n';
+  for (int i = 0; i < DIM; ++i) {
+    for (int j = 0; j < DIM; ++j) ss << setw(16) << hmm.transition[i][j];
+    ss << '\n';
+  }
+  ss << "\nobservation: " << DIM << '\n';
+  for (int k = 0; k < DIM; ++k) {
+    for (int i = 0; i < DIM; ++i) ss << setw(16) << hmm.observation[k][i];
+    ss << '\n';
+  }
+}
+
 void train(int iter) {
   for (int i = 0; i < iter; ++i) {
     sub_train();
@@ -59,6 +80,7 @@ void sub_train() {
 
   for (const auto &seq : Data) {
     /* Forward algorithm */
+
     double alpha[TIME][DIM] = {{0}};
     // Init
     for (int d = 0; d < DIM; ++d) {
@@ -82,13 +104,13 @@ void sub_train() {
       beta[TIME - 1][d] = 1;
     }
     for (int t = TIME - 2; t >= 0; --t) {
-      for (int d = 0; d < DIM; ++d) {
+      for (int i = 0; i < DIM; ++i) {
         double sum = 0;
         // beta(t) = sum{ a * b(o+1) * beta(t+1) }
-        for (int i = 0; i < DIM; ++i)
-          sum += hmm.transition[d][i] * hmm.observation[seq[t + 1]][i] *
-                 beta[t + 1][i];
-        beta[t][d] = sum;
+        for (int j = 0; j < DIM; ++j)
+          sum += hmm.transition[i][j] * hmm.observation[seq[t + 1]][j] *
+                 beta[t + 1][j];
+        beta[t][i] = sum;
       }
     }
 
@@ -131,44 +153,33 @@ void sub_train() {
 
     for (int i = 0; i < DIM; ++i) init[i] += gamma[0][i];
 
-    for (int k = 0; k < DIM; ++k)
-      for (int i = 0; i < DIM; ++i)
-        for (int t = 0; t < TIME; ++t)
-          if (seq[t] == k) gamma_sum_k[k][i] += gamma[k][i];
+    for (int i = 0; i < DIM; ++i)
+      for (int t = 0; t < TIME - 1; ++t) gamma_sum_k[seq[t]][i] += gamma[t][i];
   }
 
   /* Update model */
   /* PI */
-  cout << left << "initial: " << DIM << '\n';
+  // cout << left << "initial: " << DIM << '\n';
   for (int i = 0; i < DIM; ++i) {
     hmm.initial[i] = init[i] / Data.size();
-    cout << setw(16) << hmm.initial[i];
+    // cout << setw(16) << hmm.initial[i];
   }
   /* A */
-  cout << "\n\ntransition: " << DIM << '\n';
+  // cout << "\n\ntransition: " << DIM << '\n';
   for (int i = 0; i < DIM; ++i) {
     for (int j = 0; j < DIM; ++j) {
       hmm.transition[i][j] = epsilon_sum[i][j] / gamma_sum[i];
-      cout << setw(16) << hmm.transition[i][j];
+      // cout << setw(16) << hmm.transition[i][j];
     }
-    cout << '\n';
+    // cout << '\n';
   }
   /* B */
-  cout << "\nobservation: " << DIM << '\n';
+  // cout << "\nobservation: " << DIM << '\n';
   for (int k = 0; k < DIM; ++k) {
     for (int i = 0; i < DIM; ++i) {
       hmm.observation[k][i] = gamma_sum_k[k][i] / gamma_sum[i];
-      cout << setw(16) << hmm.observation[k][i];
+      // cout << setw(16) << hmm.observation[k][i];
     }
-    cout << '\n';
+    // cout << '\n';
   }
-  cout << "\nSum:\n";
-  for (int i = 0; i < DIM; ++i) {
-    double sum = 0;
-    for (int k = 0; k < DIM; ++k) {
-      sum += hmm.observation[k][i];
-    }
-    cout << setw(16) << sum;
-  }
-  cout << '\n';
 }
