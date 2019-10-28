@@ -9,7 +9,6 @@ HMM hmm;
 vector<vector<int>> Data;
 
 void load_data(char const *seq_path);
-void dump_data(char const *output_model_path);
 void train(int iter);
 void sub_train();
 
@@ -34,7 +33,8 @@ int main(int argc, char const *argv[]) {
   train(iter);
 
   // dump model
-  dump_data(output_model_path);
+  FILE *fp = open_or_die(output_model_path, "w");
+  dumpHMM(fp, &hmm);
 }
 
 void load_data(char const *seq_path) {
@@ -51,21 +51,21 @@ void load_data(char const *seq_path) {
   return;
 }
 
-void dump_data(char const *output_model_path) {
-  ofstream ss(output_model_path);
-  ss << left << "initial: " << DIM << '\n';
-  for (int i = 0; i < DIM; ++i) ss << setw(16) << hmm.initial[i];
-  ss << "\n\ntransition: " << DIM << '\n';
-  for (int i = 0; i < DIM; ++i) {
-    for (int j = 0; j < DIM; ++j) ss << setw(16) << hmm.transition[i][j];
-    ss << '\n';
-  }
-  ss << "\nobservation: " << DIM << '\n';
-  for (int k = 0; k < DIM; ++k) {
-    for (int i = 0; i < DIM; ++i) ss << setw(16) << hmm.observation[k][i];
-    ss << '\n';
-  }
-}
+// void dump_data(char const *output_model_path) {
+//   ofstream ss(output_model_path);
+//   ss << left << "initial: " << DIM << '\n';
+//   for (int i = 0; i < DIM; ++i) ss << setw(16) << hmm.initial[i];
+//   ss << "\n\ntransition: " << DIM << '\n';
+//   for (int i = 0; i < DIM; ++i) {
+//     for (int j = 0; j < DIM; ++j) ss << setw(16) << hmm.transition[i][j];
+//     ss << '\n';
+//   }
+//   ss << "\nobservation: " << DIM << '\n';
+//   for (int k = 0; k < DIM; ++k) {
+//     for (int i = 0; i < DIM; ++i) ss << setw(16) << hmm.observation[k][i];
+//     ss << '\n';
+//   }
+// }
 
 void train(int iter) {
   for (int i = 0; i < iter; ++i) {
