@@ -1,0 +1,4 @@
+2-extract-feat.sh: line 26: compute-mfcc-feats: command not found
+2-extract-feat.sh: line 27: add-deltas: command not found
+2-extract-feat.sh: line 28: compute-cmvn-stats: command not found
+2-extract-feat.sh: line 29: apply-cmvn: command not found
