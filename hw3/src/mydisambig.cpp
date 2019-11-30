@@ -25,7 +25,7 @@ struct Node {
     string s;
     double prob;
     int idx;
-    Node(string _s) : s(_s), prob(-100), idx(0) {}
+    Node(string _s) : s(_s), prob(-1e10), idx(0) {}
     Node(string _s, double _prob) : s(_s), prob(_prob), idx(0) {}
 };
 
@@ -59,6 +59,8 @@ int main(int argc, char *argv[]) {
         ss.str("");
         ss.clear();
     }
+    zy2big5["<s>"].push_back("<s");
+    zy2big5["</s>"].push_back("</s");
 
     // read language model
     File f(argv[3], "r");
@@ -76,6 +78,7 @@ int main(int argc, char *argv[]) {
         out << output[0] << "\n";
     }
 }
+
 /*  detailed function definition  */
 
 double prob_of_bigram(const char *a, const char *b) {
@@ -125,14 +128,14 @@ vector<string> viterbi(string &line) {
             }
         }
     }
-    vector<Node> tmp = nodes[nodes.size() - 2];
-    for (int k = 0; k < tmp.size(); ++k) {
-        double prob = tmp[k].prob;
-        if (prob > nodes.back()[0].prob) {
-            nodes.back()[0].prob = prob;
-            nodes.back()[0].idx = k;
-        }
-    }
+    // vector<Node> tmp = nodes[nodes.size() - 2];
+    // for (int k = 0; k < tmp.size(); ++k) {
+    //     double prob = tmp[k].prob;
+    //     if (prob > nodes.back()[0].prob) {
+    //         nodes.back()[0].prob = prob;
+    //         nodes.back()[0].idx = k;
+    //     }
+    // }
     vector<string> output;
     output.reserve(nodes.size());
     Node temp = nodes.back()[0];
