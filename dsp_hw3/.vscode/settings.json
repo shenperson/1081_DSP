@@ -1,0 +1,15 @@
+{
+    "files.encoding": "Big5",
+    "files.associations": {
+        "unordered_map": "cpp",
+        "iosfwd": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "vector": "cpp",
+        "iostream": "cpp",
+        "limits": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "sstream": "cpp"
+    }
+}
